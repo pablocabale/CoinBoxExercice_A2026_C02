@@ -1,0 +1,41 @@
+name: CI CoinBox
+
+# Déclencher le workflow à chaque commit (push)
+on:
+  push:
+    branches: ["**"]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Récupérer le code source du dépôt
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      # 2. Configurer l'environnement Python
+      - name: Configurer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # 3. Installer les dépendances du projet
+      - name: Installer les dépendances
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install pytest coverage
+
+      # 4. Exécuter les tests et générer le rapport HTML de couverture
+      - name: Lancer les tests et générer le rapport de couverture
+        run: |
+          coverage run -m pytest
+          coverage html
+
+      # 5. Sauvegarder le dossier htmlcov comme artefact
+      - name: Sauvegarder le rapport HTML
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-report
+          path: htmlcov/
